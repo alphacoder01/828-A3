@@ -20,10 +20,12 @@
 - conda install -c conda-forge cudatoolkit-dev
 - cd mask2former/modeling/pixel_decoder/ops
 - sh make.sh
+- pip install albumentations
 
 
 
 # To Test:
 - Download the checkpoints from [here](https://drive.google.com/drive/folders/1HOPkNu-PNNKSOTITbIfs6gE1IiINOigD?usp=share_link) and place them in ckpt(have to create this) directory in Mask2Former directory.
-- python test_q1.py path2imageDir
-- python test_q2.py path2imageDir
+- python test.py path2imageDir path2annotationDir 1  #for question1
+#### Output json is stored in ./output directory (gets overwritten)
+- python test.py path2imageDir path2annotationDir 2  #for question2

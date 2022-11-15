@@ -4,8 +4,11 @@ instant_test_output
 inference_test_output
 Outputs
 Modified_data
+ckpt
+temp_img_dir
+eval_out
 
-
+*.pth
 *.png
 *.json
 *.diff

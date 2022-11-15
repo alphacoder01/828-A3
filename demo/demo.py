@@ -4,6 +4,8 @@ import argparse
 import glob
 import multiprocessing as mp
 import os
+import warnings
+warnings.filterwarnings("ignore")
 
 # fmt: off
 import sys

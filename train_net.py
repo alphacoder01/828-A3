@@ -288,6 +288,8 @@ def setup(args):
     add_maskformer2_config(cfg)
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
+    if args.eval_only:
+        cfg.DATASETS.TEST=("test_Ashish",)
     cfg.freeze()
     default_setup(cfg, args)
     # Setup logger for "mask_former" module
@@ -303,6 +305,7 @@ def main(args):
         DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
             cfg.MODEL.WEIGHTS, resume=args.resume
         )
+        print(cfg)
         res = Trainer.test(cfg, model)
         if cfg.TEST.AUG.ENABLED:
             res.update(Trainer.test_with_TTA(cfg, model))
@@ -314,9 +317,48 @@ def main(args):
     trainer.resume_or_load(resume=args.resume)
     return trainer.train()
 
+import cv2
+
+def get_data_dict(img_dir,anno_dir):
+  img_files = os.listdir(img_dir)
+  dataset_dicts = []
+  for idx, img_file in enumerate(img_files):
+    record = {}
+    filename = os.path.join(img_dir,img_file)
+    h,w = cv2.imread(filename).shape[:2]
+
+    record["file_name"] = filename
+    record["image_id"] = idx
+    record["height"] = h
+    record["width"] = w
+    record["sem_seg_file_name"]  = os.path.join(anno_dir,img_file)
+    dataset_dicts.append(record)
+
+  return dataset_dicts
+
+
 
 if __name__ == "__main__":
     args = default_argument_parser().parse_args()
+    if args.eval_only:
+        from detectron2.data import DatasetCatalog,MetadataCatalog
+        X,Y = args.config_file.split('@')
+        print(Y)
+        args.config_file = X
+        img_dir,anno_dir = Y.split("___")
+
+        classes =  ["background",
+        "Bipolar_Forceps",
+        "Prograsp_Forceps",
+        "Large_Needle_Driver",
+        "Monopolar_Curved_Scissors",
+        "Ultrasound_Probe",
+        "Suction_Instrument",
+        "Clip_Applier"]
+
+        DatasetCatalog.register("test_Ashish", lambda: get_data_dict(img_dir,anno_dir))
+        MetadataCatalog.get("test_Ashish").set(stuff_classes=classes, ignore_label=8,evaluator_type='sem_seg')
+
     print("Command Line Args:", args)
     launch(
         main,
